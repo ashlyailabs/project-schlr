@@ -175,7 +175,7 @@ export default function Home() {
         <div className="flex items-start justify-between mb-8 pb-6 border-b border-gray-200 dark:border-gray-600">
           <div>
             <h1 className="text-2xl font-semibold text-gray-900 dark:text-white tracking-tight">Project Scheduler</h1>
-            <p className="text-sm text-gray-400 mt-1">Construction & Furnishing · Corporate Department</p>
+            <p className="text-sm text-gray-400 mt-1">Corporate Department - Ashly Group of Companies</p>
           </div>
           <div className="flex gap-6 text-right mr-12">
             <div>

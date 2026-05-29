@@ -166,6 +166,202 @@ function GanttChart({ tasks, dates, highlights, onToggleHighlight }) {
   )
 }
 
+function escapeHtml(s) {
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+}
+
+function monthPrintLabel(firstDate) {
+  return new Date(firstDate + 'T00:00:00')
+    .toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })
+    .toUpperCase()
+    .replace(' ', ' - ')
+}
+
+function buildPrintAreaHTML(project, tasks, dates, highlights, logoDataUrl = '') {
+  const months = groupByMonth(dates)
+  const hasDates = project.start_date && project.end_date
+  const dateRangeStr = hasDates
+    ? `${fmtFull(project.start_date)} – ${fmtFull(project.end_date)}`
+    : ''
+
+  let table = '<table><thead>'
+
+  table += '<tr><th colspan="2" class="month-header"></th>'
+  months.forEach(mg => {
+    table += `<th colspan="${mg.dates.length}" class="month-header">${monthPrintLabel(mg.dates[0])}</th>`
+  })
+  table += '</tr>'
+
+  table += '<tr><th class="gantt-sl-col">SL NO</th><th class="gantt-activity-col">WORK ACTIVITY DETAILS</th>'
+  dates.forEach(ds => {
+    const day = new Date(ds + 'T00:00:00').getDate()
+    const sundayCls = isWeekend(ds) ? ' sunday-col sunday-day' : ''
+    table += `<th class="gantt-date-col${sundayCls}">${day}</th>`
+  })
+  table += '</tr></thead><tbody>'
+
+  tasks.forEach((task, i) => {
+    const rowBg = i % 2 === 0 ? '#FFFFFF' : '#F5F5F5'
+    table += `<tr style="background:${rowBg}">`
+    table += `<td class="gantt-sl-col" style="text-align:center;vertical-align:top">${task.sl}</td>`
+    table += `<td class="gantt-activity-col" style="vertical-align:top">`
+    table += `<div style="font-weight:bold;text-decoration:underline">${escapeHtml(task.name)}</div>`
+    if (task.description) {
+      table += `<div style="font-size:6pt;color:#555;margin-top:2px;line-height:1.3">${escapeHtml(task.description)}</div>`
+    }
+    table += '</td>'
+    dates.forEach(ds => {
+      const hl = isHighlighted(highlights, task.id, ds)
+      let cls = 'gantt-date-col'
+      if (hl) cls += ' highlighted-cell'
+      else if (isWeekend(ds)) cls += ' sunday-col'
+      table += `<td class="${cls}">&nbsp;</td>`
+    })
+    table += '</tr>'
+  })
+
+  table += '</tbody></table>'
+
+  return `
+    <div class="print-doc-header">
+      ${logoDataUrl ? `<img src="${logoDataUrl}" alt="Ashly" class="print-logo" style="height:120px;width:auto;mix-blend-mode:multiply;background:white;">` : ''}
+      <div class="print-doc-meta">
+        <div class="print-company">ASHLY GROUP OF &amp; COMPANIES</div>
+        <div class="print-project-name">${escapeHtml(project.name)}</div>
+        ${project.location ? `<div class="print-meta-line">${escapeHtml(project.location)}</div>` : ''}
+        ${dateRangeStr ? `<div class="print-meta-line">${dateRangeStr}</div>` : ''}
+      </div>
+    </div>
+    ${table}
+  `
+}
+
+const PRINT_AREA_STYLES = `
+  #print-area {
+    display: none;
+    background: white;
+    color: black;
+  }
+  #print-area .print-doc-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 8px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #999;
+  }
+  #print-area .print-logo {
+    height: 120px;
+    width: auto;
+    mix-blend-mode: multiply;
+    background: white;
+  }
+  #print-area .print-doc-meta {
+    text-align: right;
+  }
+  #print-area .print-company {
+    font-weight: bold;
+    font-size: 14pt;
+  }
+  #print-area .print-project-name {
+    font-weight: bold;
+    font-size: 11pt;
+    margin-top: 4px;
+  }
+  #print-area .print-meta-line {
+    font-size: 9pt;
+    margin-top: 2px;
+    color: #333;
+  }
+  @media print {
+    @page { size: A4 landscape; margin: 10mm; }
+    body * { visibility: hidden; }
+    #print-area, #print-area * { visibility: visible; }
+    #print-area {
+      display: block;
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+    }
+    .gantt-date-col { width: 18px; min-width: 18px; max-width: 18px; }
+    .gantt-activity-col { width: 280px; }
+    .gantt-sl-col { width: 35px; }
+    table { border-collapse: collapse; width: 100%; font-size: 7pt; }
+    th, td { border: 0.5px solid #999; padding: 1px 2px; }
+    th { font-weight: bold; text-align: center; }
+    .highlighted-cell { background-color: #4472C4 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .sunday-col { background-color: #FFE0E0 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .sunday-day { color: red !important; }
+    .month-header { background-color: #D9D9D9 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+`
+
+const LOGO_PATH = '/ashly_logo_.png'
+
+async function fetchLogoDataUrl() {
+  try {
+    const url = `${window.location.origin}${LOGO_PATH}`
+    const response = await fetch(url)
+    if (!response.ok) return ''
+    const blob = await response.blob()
+    if (!blob.type.startsWith('image/')) return ''
+    return await new Promise((resolve) => {
+      const reader = new FileReader()
+      reader.onloadend = () => resolve(typeof reader.result === 'string' ? reader.result : '')
+      reader.onerror = () => resolve('')
+      reader.readAsDataURL(blob)
+    })
+  } catch {
+    return ''
+  }
+}
+
+function waitForPrintImages(container) {
+  const images = container.querySelectorAll('img')
+  if (!images.length) return Promise.resolve()
+  return Promise.all([...images].map(img => new Promise(resolve => {
+    if (img.complete) resolve()
+    else {
+      img.onload = resolve
+      img.onerror = resolve
+    }
+  })))
+}
+
+async function downloadProjectPDF(project, tasks, dates, highlights) {
+  if (!dates.length) return
+
+  const logoDataUrl = await fetchLogoDataUrl()
+
+  const styleEl = document.createElement('style')
+  styleEl.id = 'print-area-styles'
+  styleEl.textContent = PRINT_AREA_STYLES
+
+  const printArea = document.createElement('div')
+  printArea.id = 'print-area'
+  printArea.innerHTML = buildPrintAreaHTML(project, tasks, dates, highlights, logoDataUrl)
+
+  document.head.appendChild(styleEl)
+  document.body.appendChild(printArea)
+
+  await waitForPrintImages(printArea)
+  await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))
+
+  const cleanup = () => {
+    printArea.remove()
+    styleEl.remove()
+    window.removeEventListener('afterprint', cleanup)
+  }
+
+  window.addEventListener('afterprint', cleanup)
+  window.print()
+}
+
 function taskPayload(form) {
   return {
     name: form.name,
@@ -404,9 +600,9 @@ function DownloadMenu({ project, tasks, dates, highlights, onClose }) {
     onClose()
   }
 
-  function downloadPDF() {
+  async function downloadPDF() {
+    await downloadProjectPDF(project, tasks, dates, highlights)
     onClose()
-    window.print()
   }
 
   const items = [
@@ -458,24 +654,6 @@ export default function ProjectPage() {
       localStorage.setItem('theme', 'light')
     }
   }, [darkMode])
-
-  useEffect(() => {
-    const style = document.createElement('style')
-    style.id = 'print-styles'
-    style.textContent = `
-      @media print {
-        @page { size: landscape; margin: 10mm; }
-        body { background: white !important; color: black !important; }
-        .no-print { display: none !important; }
-        #gantt-print-area { border: 1px solid #ccc !important; overflow: visible !important; }
-        .gantt-table { width: 100% !important; font-size: 9px !important; }
-        .gantt-highlight { background: #3B82F6 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-        thead th { background: #F3F4F6 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-      }
-    `
-    document.head.appendChild(style)
-    return () => { document.getElementById('print-styles')?.remove() }
-  }, [])
 
   const load = useCallback(async () => {
     setLoading(true)

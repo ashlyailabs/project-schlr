@@ -2,7 +2,7 @@ import './globals.css'
 
 export const metadata = {
   title: 'Project Scheduler',
-  description: 'Corporate Department · Construction & Furnishing',
+  description: 'Ashly Group of Companies - Corporate Department',
 }
 
 export default function RootLayout({ children }) {

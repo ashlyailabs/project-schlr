@@ -10,6 +10,7 @@ create table projects (
   location   text,
   start_date date,
   end_date   date,
+  department text not null default 'corporate',
   created_at timestamp with time zone default now()
 );
 
@@ -62,3 +63,6 @@ alter table projects add column if not exists end_date date;
 -- ── Migration: task dates optional (Gantt uses project range) ───────────────
 alter table tasks alter column start_date drop not null;
 alter table tasks alter column end_date drop not null;
+
+-- ── Migration: project department ───────────────────────────────────────────
+alter table projects add column if not exists department text not null default 'corporate';

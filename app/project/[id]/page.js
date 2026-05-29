@@ -66,7 +66,7 @@ function cellBg(ds, rowIdx, isHl) {
   return rowIdx % 2 === 0 ? 'bg-white dark:bg-gray-800' : 'bg-gray-50 dark:bg-gray-800/80'
 }
 
-function GanttChart({ tasks, dates, highlights, onToggleHighlight }) {
+function GanttChart({ tasks, dates, highlights, onToggleHighlight, onEditTask }) {
   if (!tasks.length || !dates.length) return null
 
   const months = groupByMonth(dates)
@@ -127,7 +127,10 @@ function GanttChart({ tasks, dates, highlights, onToggleHighlight }) {
           {tasks.map((task, i) => (
             <Fragment key={task.id}>
               <tr className={i % 2 === 0 ? 'bg-white dark:bg-gray-800' : 'bg-gray-50 dark:bg-gray-800/80'}>
-                <td className="px-4 h-11 border-b border-r-2 border-gray-200 dark:border-gray-600 text-xs font-semibold text-gray-900 dark:text-white overflow-hidden text-ellipsis whitespace-nowrap align-middle">
+                <td
+                  onClick={() => onEditTask?.(task)}
+                  className="px-4 h-11 border-b border-r-2 border-gray-200 dark:border-gray-600 text-xs font-semibold text-gray-900 dark:text-white overflow-hidden text-ellipsis whitespace-nowrap align-middle cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700"
+                >
                   <span className="text-gray-400 dark:text-gray-500 font-normal mr-2">{task.sl}</span>
                   <span className="underline">{task.name}</span>
                 </td>
@@ -144,7 +147,10 @@ function GanttChart({ tasks, dates, highlights, onToggleHighlight }) {
                 })}
               </tr>
               <tr className={i % 2 === 0 ? 'bg-white dark:bg-gray-800' : 'bg-gray-50 dark:bg-gray-800/80'}>
-                <td className="px-4 py-1 pb-2.5 border-b border-r-2 border-gray-200 dark:border-gray-600 text-[11px] text-gray-500 dark:text-gray-400 leading-snug align-top">
+                <td
+                  onClick={() => onEditTask?.(task)}
+                  className="px-4 py-1 pb-2.5 border-b border-r-2 border-gray-200 dark:border-gray-600 text-[11px] text-gray-500 dark:text-gray-400 leading-snug align-top cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700"
+                >
                   {task.description || '\u00A0'}
                 </td>
                 {dates.map(ds => {
@@ -228,14 +234,15 @@ function buildPrintAreaHTML(project, tasks, dates, highlights, logoDataUrl = '')
 
   return `
     <div class="print-doc-header">
-      ${logoDataUrl ? `<img src="${logoDataUrl}" alt="Ashly" class="print-logo" style="height:120px;width:auto;mix-blend-mode:multiply;background:white;">` : ''}
+      ${logoDataUrl ? `<img src="${logoDataUrl}" alt="Ashly" class="print-logo">` : ''}
       <div class="print-doc-meta">
-        <div class="print-company">ASHLY GROUP OF &amp; COMPANIES</div>
+        <div class="print-company">ASHLY INTERIORS &amp; CONSTRUCTIONS</div>
         <div class="print-project-name">${escapeHtml(project.name)}</div>
         ${project.location ? `<div class="print-meta-line">${escapeHtml(project.location)}</div>` : ''}
         ${dateRangeStr ? `<div class="print-meta-line">${dateRangeStr}</div>` : ''}
       </div>
     </div>
+    <hr style="margin: 8px 0; border: 0.5px solid #ccc;">
     ${table}
   `
 }
@@ -243,22 +250,65 @@ function buildPrintAreaHTML(project, tasks, dates, highlights, logoDataUrl = '')
 const PRINT_AREA_STYLES = `
   #print-area {
     display: none;
-    background: white;
-    color: black;
+    background: white !important;
+    color: black !important;
   }
+
+  #print-area * {
+    background-color: inherit;
+    color: inherit;
+  }
+
+  #print-area table {
+    background: white !important;
+    color: black !important;
+  }
+
+  #print-area th,
+  #print-area td {
+    background-color: white !important;
+    color: black !important;
+    border-color: #999 !important;
+  }
+
+  #print-area .month-header {
+    background-color: #D9D9D9 !important;
+    color: black !important;
+  }
+
+  #print-area .highlighted-cell {
+    background-color: #4472C4 !important;
+    color: white !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  #print-area .sunday-col {
+    background-color: #FFE0E0 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  #print-area .sunday-day {
+    color: #CC0000 !important;
+  }
+
+  #print-area .print-company,
+  #print-area .print-project-name,
+  #print-area .print-meta-line {
+    color: black !important;
+  }
+
   #print-area .print-doc-header {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    margin-bottom: 8px;
-    padding-bottom: 8px;
-    border-bottom: 1px solid #999;
   }
   #print-area .print-logo {
     height: 120px;
     width: auto;
-    mix-blend-mode: multiply;
-    background: white;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
   #print-area .print-doc-meta {
     text-align: right;
@@ -275,10 +325,13 @@ const PRINT_AREA_STYLES = `
   #print-area .print-meta-line {
     font-size: 9pt;
     margin-top: 2px;
-    color: #333;
   }
   @media print {
     @page { size: A4 landscape; margin: 10mm; }
+    html, body {
+      background: white !important;
+      color: black !important;
+    }
     body * { visibility: hidden; }
     #print-area, #print-area * { visibility: visible; }
     #print-area {
@@ -287,6 +340,12 @@ const PRINT_AREA_STYLES = `
       left: 0;
       top: 0;
       width: 100%;
+      background: white !important;
+      color: black !important;
+    }
+    #print-area .print-logo {
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
     }
     .gantt-date-col { width: 18px; min-width: 18px; max-width: 18px; }
     .gantt-activity-col { width: 280px; }
@@ -294,10 +353,6 @@ const PRINT_AREA_STYLES = `
     table { border-collapse: collapse; width: 100%; font-size: 7pt; }
     th, td { border: 0.5px solid #999; padding: 1px 2px; }
     th { font-weight: bold; text-align: center; }
-    .highlighted-cell { background-color: #4472C4 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-    .sunday-col { background-color: #FFE0E0 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-    .sunday-day { color: red !important; }
-    .month-header { background-color: #D9D9D9 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   }
 `
 
@@ -360,6 +415,16 @@ async function downloadProjectPDF(project, tasks, dates, highlights) {
 
   window.addEventListener('afterprint', cleanup)
   window.print()
+}
+
+const DEPARTMENT_BADGE = {
+  corporate: 'bg-blue-50 dark:bg-blue-900/40 text-blue-700 dark:text-blue-400',
+  government: 'bg-green-50 dark:bg-green-900/40 text-green-700 dark:text-green-400',
+}
+
+function deptLabel(dept) {
+  const d = dept || 'corporate'
+  return d.charAt(0).toUpperCase() + d.slice(1)
 }
 
 function taskPayload(form) {
@@ -751,8 +816,11 @@ export default function ProjectPage() {
 
         <div className="flex items-start justify-between mb-8 print:mb-4">
           <div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <h1 className="text-2xl font-semibold text-gray-900 dark:text-white tracking-tight print:text-xl">{project.name}</h1>
+              <span className={`no-print text-xs px-2.5 py-0.5 rounded-full font-medium ${DEPARTMENT_BADGE[project.department || 'corporate']}`}>
+                {deptLabel(project.department)}
+              </span>
               <button
                 onClick={() => setEditProject(true)}
                 className="no-print w-8 h-8 rounded-lg border border-gray-200 dark:border-gray-600 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center justify-center transition-colors flex-shrink-0"
@@ -819,7 +887,7 @@ export default function ProjectPage() {
                   {highlightCount} cell{highlightCount !== 1 ? 's' : ''} highlighted
                 </span>
               )}
-              <span className="text-xs text-gray-400">Click any cell to highlight a day</span>
+              <span className="text-xs text-gray-400">Click activity to edit · Click any date cell to highlight</span>
             </div>
           </div>
         )}
@@ -830,6 +898,7 @@ export default function ProjectPage() {
             dates={dates}
             highlights={highlights}
             onToggleHighlight={toggleHighlight}
+            onEditTask={setEditTask}
           />
         ) : tasks.length > 0 ? (
           <div className="text-center py-20 border border-dashed border-gray-200 dark:border-gray-600 rounded-2xl text-gray-400 text-sm">

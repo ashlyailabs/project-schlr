@@ -1,0 +1,26 @@
+---
+description: App Router only — never use the Pages Router (pages/ folder)
+alwaysApply: true
+---
+
+# App Router only — no pages/ folder
+
+This project uses **Next.js App Router** exclusively (`app/` folder).
+
+## NEVER do this
+
+- Create a `pages/` folder
+- Create any file under `pages/`, including:
+  - `pages/_document.js`
+  - `pages/_app.js`
+  - `pages/index.js`
+  - Any other Pages Router file
+
+## ALWAYS do this
+
+- Put routes in `app/` (e.g. `app/page.js`, `app/layout.js`, `app/project/[id]/page.js`)
+- Use `app/layout.js` for root layout and theme scripts — not `_document.js`
+
+## If pages/ is created by mistake
+
+Delete the entire `pages/` folder immediately.

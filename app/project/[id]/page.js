@@ -166,6 +166,15 @@ function GanttChart({ tasks, dates, highlights, onToggleHighlight }) {
   )
 }
 
+function taskPayload(form) {
+  return {
+    name: form.name,
+    description: form.description || null,
+    status: form.status,
+    progress: form.progress,
+  }
+}
+
 function TaskModal({ task, isNew, onSave, onDelete, onClose }) {
   const [f, setF] = useState({
     name:        task?.name        || '',
@@ -229,6 +238,59 @@ function TaskModal({ task, isNew, onSave, onDelete, onClose }) {
   )
 }
 
+function ProjectModal({ project, onSave, onClose }) {
+  const [f, setF] = useState({
+    name:       project.name        || '',
+    location:   project.location    || '',
+    start_date: project.start_date  || '',
+    end_date:   project.end_date    || '',
+  })
+  const inp = 'w-full border border-gray-200 dark:border-gray-600 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 dark:text-white'
+
+  return (
+    <div className="no-print fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-600 p-6 w-full max-w-sm max-h-[90vh] overflow-y-auto shadow-xl">
+        <div className="flex items-center justify-between mb-5">
+          <h3 className="text-base font-semibold text-gray-900 dark:text-white">Edit Project</h3>
+          <button onClick={onClose} className="text-gray-300 hover:text-gray-500 dark:hover:text-gray-400 text-lg leading-none">✕</button>
+        </div>
+
+        <div className="space-y-4">
+          <div>
+            <label className="text-xs text-gray-400 block mb-1.5">Project Name</label>
+            <input value={f.name} onChange={e => setF(p => ({ ...p, name: e.target.value }))} placeholder="Project name" className={inp} />
+          </div>
+          <div>
+            <label className="text-xs text-gray-400 block mb-1.5">Location</label>
+            <input value={f.location} onChange={e => setF(p => ({ ...p, location: e.target.value }))} placeholder="e.g. Dubai Marina, Office 4B" className={inp} />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs text-gray-400 block mb-1.5">Start Date</label>
+              <input type="date" value={f.start_date} onChange={e => setF(p => ({ ...p, start_date: e.target.value }))} className={inp} />
+            </div>
+            <div>
+              <label className="text-xs text-gray-400 block mb-1.5">End Date</label>
+              <input type="date" value={f.end_date} onChange={e => setF(p => ({ ...p, end_date: e.target.value }))} className={inp} />
+            </div>
+          </div>
+        </div>
+
+        <div className="flex gap-2 justify-end mt-6">
+          <button onClick={onClose}
+            className="text-sm text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-gray-600 rounded-xl px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-700">
+            Cancel
+          </button>
+          <button onClick={() => { onSave(f); onClose() }}
+            className="text-sm bg-blue-600 text-white rounded-xl px-4 py-2 hover:bg-blue-700 font-medium">
+            Save
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function DownloadMenu({ project, tasks, dates, highlights, onClose }) {
   const ref = useRef(null)
 
@@ -266,17 +328,49 @@ function DownloadMenu({ project, tasks, dates, highlights, onClose }) {
     const sheetName = project.name.slice(0, 31).replace(/[*?:/\\[\]]/g, '')
     const ws = wb.addWorksheet(sheetName || 'Project')
 
-    const headers = ['SL No', 'Activity Name', 'Description', 'Status', 'Progress %', ...dates]
-    ws.addRow(headers)
+    const months = groupByMonth(dates)
+    const dateStartCol = 6
 
-    const headerRow = ws.getRow(1)
-    headerRow.font = { bold: true }
-    headerRow.eachCell(cell => {
+    // Row 1 — month groups across date columns
+    const monthRow = ws.getRow(1)
+    let col = dateStartCol
+    months.forEach(mg => {
+      const label = new Date(mg.dates[0] + 'T00:00:00')
+        .toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })
+        .toUpperCase()
+      const startCol = col
+      const endCol = col + mg.dates.length - 1
+      monthRow.getCell(startCol).value = label
+      if (mg.dates.length > 1) {
+        ws.mergeCells(1, startCol, 1, endCol)
+      }
+      const cell = monthRow.getCell(startCol)
+      cell.font = { bold: true }
+      cell.alignment = { horizontal: 'center', vertical: 'middle' }
+      cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE5E7EB' } }
+      col = endCol + 1
+    })
+
+    // Row 2 — fixed columns + day numbers only
+    const dayRow = ws.getRow(2)
+    dayRow.getCell(1).value = 'SL No'
+    dayRow.getCell(2).value = 'Activity Name'
+    dayRow.getCell(3).value = 'Description'
+    dayRow.getCell(4).value = 'Status'
+    dayRow.getCell(5).value = 'Progress %'
+    dates.forEach((ds, i) => {
+      const cell = dayRow.getCell(dateStartCol + i)
+      cell.value = new Date(ds + 'T00:00:00').getDate()
+      cell.numFmt = '0'
+      cell.dataValidation = undefined
+    })
+    dayRow.font = { bold: true }
+    dayRow.eachCell(cell => {
       cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE5E7EB' } }
       cell.border = { bottom: { style: 'thin', color: { argb: 'FFD1D5DB' } } }
     })
 
-    tasks.forEach((t, idx) => {
+    tasks.forEach((t) => {
       const row = ws.addRow([
         t.sl,
         t.name,
@@ -287,7 +381,7 @@ function DownloadMenu({ project, tasks, dates, highlights, onClose }) {
       ])
       dates.forEach((d, di) => {
         if (isHighlighted(highlights, t.id, d)) {
-          const cell = row.getCell(6 + di)
+          const cell = row.getCell(dateStartCol + di)
           cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF3B82F6' } }
           cell.font = { color: { argb: 'FFFFFFFF' } }
           cell.alignment = { horizontal: 'center' }
@@ -346,6 +440,7 @@ export default function ProjectPage() {
   const [highlights, setHighlights] = useState(new Set())
   const [loading, setLoading] = useState(true)
   const [editTask, setEditTask] = useState(null)
+  const [editProject, setEditProject] = useState(false)
   const [downloadOpen, setDownloadOpen] = useState(false)
   const [darkMode, setDarkMode] = useState(false)
 
@@ -411,15 +506,27 @@ export default function ProjectPage() {
   }
 
   async function saveTask(form) {
+    const payload = taskPayload(form)
     if (editTask === 'new') {
       const { data } = await supabase.from('tasks')
-        .insert({ project_id: id, sl: tasks.length + 1, ...form }).select().single()
+        .insert({ project_id: id, sl: tasks.length + 1, ...payload }).select().single()
       if (data) setTasks(ts => [...ts, data])
     } else {
       const { data } = await supabase.from('tasks')
-        .update(form).eq('id', editTask.id).select().single()
+        .update(payload).eq('id', editTask.id).select().single()
       if (data) setTasks(ts => ts.map(t => t.id === editTask.id ? data : t))
     }
+  }
+
+  async function saveProject(form) {
+    const payload = {
+      name: form.name.trim(),
+      location: form.location.trim() || null,
+      start_date: form.start_date || null,
+      end_date: form.end_date || null,
+    }
+    const { data } = await supabase.from('projects').update(payload).eq('id', id).select().single()
+    if (data) setProject(data)
   }
 
   async function deleteTask(taskId) {
@@ -466,7 +573,17 @@ export default function ProjectPage() {
 
         <div className="flex items-start justify-between mb-8 print:mb-4">
           <div>
-            <h1 className="text-2xl font-semibold text-gray-900 dark:text-white tracking-tight print:text-xl">{project.name}</h1>
+            <div className="flex items-center gap-2">
+              <h1 className="text-2xl font-semibold text-gray-900 dark:text-white tracking-tight print:text-xl">{project.name}</h1>
+              <button
+                onClick={() => setEditProject(true)}
+                className="no-print w-8 h-8 rounded-lg border border-gray-200 dark:border-gray-600 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center justify-center transition-colors flex-shrink-0"
+                title="Edit project"
+                aria-label="Edit project"
+              >
+                ✎
+              </button>
+            </div>
             {project.location && (
               <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">📍 {project.location}</p>
             )}
@@ -546,6 +663,14 @@ export default function ProjectPage() {
           </div>
         )}
       </div>
+
+      {editProject && (
+        <ProjectModal
+          project={project}
+          onSave={saveProject}
+          onClose={() => setEditProject(false)}
+        />
+      )}
 
       {editTask && (
         <TaskModal

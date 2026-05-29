@@ -18,7 +18,7 @@ function DepartmentTile({ department, projectCount, accent, onClick }) {
   return (
     <button
       onClick={onClick}
-      className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-600 p-6 min-h-[160px] w-full text-left cursor-pointer hover:border-blue-300 dark:hover:border-blue-500 hover:shadow-md transition-all relative overflow-hidden group flex flex-col justify-between"
+      className="bg-cream-50 dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-600 p-6 min-h-[160px] w-full text-left cursor-pointer hover:border-blue-300 dark:hover:border-blue-500 hover:shadow-md transition-all relative overflow-hidden group flex flex-col justify-between"
     >
       <div className="absolute top-0 left-0 bottom-0 w-1 rounded-l-2xl" style={{ background: accent }} />
       <div className="pl-3">
@@ -97,7 +97,7 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-cream-100 dark:bg-gray-900">
       <ThemeToggle darkMode={darkMode} onToggle={() => setDarkMode(d => !d)} />
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-10">
@@ -109,7 +109,7 @@ export default function Home() {
         {loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {[1, 2, 3].map(i => (
-              <div key={i} className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-600 min-h-[160px] animate-pulse" />
+              <div key={i} className="bg-cream-50 dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-600 min-h-[160px] animate-pulse" />
             ))}
           </div>
         ) : (
@@ -127,7 +127,7 @@ export default function Home() {
             </div>
 
             {adding ? (
-              <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-600 p-5 max-w-sm flex flex-col gap-3">
+              <div className="bg-cream-50 dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-600 p-5 max-w-sm flex flex-col gap-3">
                 <p className="text-sm font-semibold text-gray-800 dark:text-white">New Department</p>
                 <input
                   value={newDeptName}
@@ -147,7 +147,7 @@ export default function Home() {
                   </button>
                   <button
                     onClick={() => { setAdding(false); setNewDeptName('') }}
-                    className="px-3 py-2 text-sm text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-gray-600 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700"
+                    className="px-3 py-2 text-sm text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-gray-600 rounded-xl hover:bg-cream-100 dark:hover:bg-gray-700"
                   >
                     Cancel
                   </button>

@@ -5,7 +5,7 @@ import { supabase } from '@/lib/supabase'
 import ThemeToggle from '@/components/ThemeToggle'
 
 const STATUS = {
-  'not-started': { label: 'Not Started', color: 'text-gray-500 dark:text-gray-400',  bg: 'bg-gray-100 dark:bg-gray-700',  bar: 'bg-gray-300',   accent: '#D1D5DB' },
+  'not-started': { label: 'Not Started', color: 'text-gray-500 dark:text-gray-400',  bg: 'bg-cream-200 dark:bg-gray-700',  bar: 'bg-gray-300',   accent: '#D1D5DB' },
   'in-progress':  { label: 'In Progress', color: 'text-blue-700 dark:text-blue-400',  bg: 'bg-blue-50 dark:bg-blue-900/40',   bar: 'bg-blue-400',   accent: '#60A5FA' },
   'done':         { label: 'Done',        color: 'text-green-700 dark:text-green-400', bg: 'bg-green-50 dark:bg-green-900/40',  bar: 'bg-green-400',  accent: '#4ADE80' },
   'delayed':      { label: 'Delayed',     color: 'text-red-600 dark:text-red-400',   bg: 'bg-red-50 dark:bg-red-900/40',    bar: 'bg-red-400',    accent: '#F87171' },
@@ -39,7 +39,7 @@ function ProjectCard({ project, onClick, onDelete }) {
   return (
     <div
       onClick={onClick}
-      className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-600 p-5 cursor-pointer hover:border-blue-300 dark:hover:border-blue-500 hover:shadow-sm transition-all relative overflow-hidden group"
+      className="bg-cream-50 dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-600 p-5 cursor-pointer hover:border-blue-300 dark:hover:border-blue-500 hover:shadow-sm transition-all relative overflow-hidden group"
     >
       <div className="absolute top-0 left-0 right-0 h-1 rounded-t-2xl" style={{ background: st.accent }} />
 
@@ -76,7 +76,7 @@ function ProjectCard({ project, onClick, onDelete }) {
           <span>Overall progress</span>
           <span className="font-medium text-gray-600 dark:text-gray-300">{avgProg}%</span>
         </div>
-        <div className="h-1.5 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
+        <div className="h-1.5 bg-cream-200 dark:bg-gray-700 rounded-full overflow-hidden">
           <div className={`h-full rounded-full transition-all ${st.bar}`} style={{ width: `${avgProg}%` }} />
         </div>
       </div>
@@ -99,7 +99,7 @@ function NewProjectForm({ name, setName, location, setLocation, startDate, setSt
   const inp = 'border border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-full'
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-600 p-5 flex flex-col gap-3">
+    <div className="bg-cream-50 dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-600 p-5 flex flex-col gap-3">
       <p className="text-sm font-semibold text-gray-800 dark:text-white">New Project</p>
       <input
         value={name}
@@ -135,7 +135,7 @@ function NewProjectForm({ name, setName, location, setLocation, startDate, setSt
         </button>
         <button
           onClick={onCancel}
-          className="px-3 py-2 text-sm text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-gray-600 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700"
+          className="px-3 py-2 text-sm text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-gray-600 rounded-xl hover:bg-cream-100 dark:hover:bg-gray-700"
         >
           Cancel
         </button>
@@ -148,9 +148,9 @@ function AddProjectCard({ onClick }) {
   return (
     <button
       onClick={onClick}
-      className="bg-white dark:bg-gray-800 rounded-2xl border border-dashed border-gray-300 dark:border-gray-600 p-5 flex flex-col items-center justify-center gap-3 cursor-pointer hover:border-blue-400 dark:hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all min-h-[160px] text-gray-400 hover:text-blue-500 group"
+      className="bg-cream-50 dark:bg-gray-800 rounded-2xl border border-dashed border-gray-300 dark:border-gray-600 p-5 flex flex-col items-center justify-center gap-3 cursor-pointer hover:border-blue-400 dark:hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all min-h-[160px] text-gray-400 hover:text-blue-500 group"
     >
-      <div className="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-700 group-hover:bg-blue-100 dark:group-hover:bg-blue-900/40 flex items-center justify-center text-xl transition-colors">
+      <div className="w-10 h-10 rounded-full bg-cream-200 dark:bg-gray-700 group-hover:bg-blue-100 dark:group-hover:bg-blue-900/40 flex items-center justify-center text-xl transition-colors">
         +
       </div>
       <span className="text-sm font-medium">Add new project</span>
@@ -241,7 +241,7 @@ export default function DepartmentPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center text-sm text-gray-400">
+      <div className="min-h-screen bg-cream-100 dark:bg-gray-900 flex items-center justify-center text-sm text-gray-400">
         Loading…
       </div>
     )
@@ -249,7 +249,7 @@ export default function DepartmentPage() {
 
   if (!department) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col items-center justify-center gap-4">
+      <div className="min-h-screen bg-cream-100 dark:bg-gray-900 flex flex-col items-center justify-center gap-4">
         <p className="text-sm text-gray-400">Department not found.</p>
         <button onClick={() => router.push('/')} className="text-sm text-blue-600 underline">← All Departments</button>
       </div>
@@ -257,7 +257,7 @@ export default function DepartmentPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-cream-100 dark:bg-gray-900">
       <ThemeToggle darkMode={darkMode} onToggle={() => setDarkMode(d => !d)} />
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-10">

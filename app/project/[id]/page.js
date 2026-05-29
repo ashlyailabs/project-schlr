@@ -6,7 +6,7 @@ import { supabase } from '@/lib/supabase'
 import ThemeToggle from '@/components/ThemeToggle'
 
 const STATUS = {
-  'not-started': { label: 'Not Started', color: 'text-gray-500',  bg: 'bg-gray-100 dark:bg-gray-700',  bar: 'bg-gray-300' },
+  'not-started': { label: 'Not Started', color: 'text-gray-500',  bg: 'bg-cream-200 dark:bg-gray-700',  bar: 'bg-gray-300' },
   'in-progress':  { label: 'In Progress', color: 'text-blue-700 dark:text-blue-400',  bg: 'bg-blue-50 dark:bg-blue-900/40',   bar: 'bg-blue-400' },
   'done':         { label: 'Done',        color: 'text-green-700 dark:text-green-400', bg: 'bg-green-50 dark:bg-green-900/40',  bar: 'bg-green-400' },
   'delayed':      { label: 'Delayed',     color: 'text-red-600 dark:text-red-400',   bg: 'bg-red-50 dark:bg-red-900/40',    bar: 'bg-red-400' },
@@ -63,7 +63,7 @@ function cellBg(ds, rowIdx, isHl) {
   if (isHl) return 'bg-blue-500 gantt-highlight'
   if (ds === TODAY) return rowIdx % 2 === 0 ? 'bg-blue-50 dark:bg-blue-900/20' : 'bg-blue-50/80 dark:bg-blue-900/15'
   if (isWeekend(ds)) return rowIdx % 2 === 0 ? 'bg-red-50 dark:bg-red-900/10' : 'bg-red-50/80 dark:bg-red-900/5'
-  return rowIdx % 2 === 0 ? 'bg-white dark:bg-gray-800' : 'bg-gray-50 dark:bg-gray-800/80'
+  return rowIdx % 2 === 0 ? 'bg-cream-50 dark:bg-gray-800' : 'bg-cream-100 dark:bg-gray-800/80'
 }
 
 function GanttChart({ tasks, dates, highlights, onToggleHighlight, onEditTask }) {
@@ -74,7 +74,7 @@ function GanttChart({ tasks, dates, highlights, onToggleHighlight, onEditTask })
   const leftW = 340
 
   return (
-    <div id="gantt-print-area" className="overflow-x-auto border border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800">
+    <div id="gantt-print-area" className="overflow-x-auto border border-gray-200 dark:border-gray-600 rounded-xl bg-cream-50 dark:bg-gray-800">
       <table
         className="border-collapse table-fixed gantt-table"
         style={{ width: leftW + dates.length * cellW }}
@@ -84,7 +84,7 @@ function GanttChart({ tasks, dates, highlights, onToggleHighlight, onEditTask })
           {dates.map(d => <col key={d} style={{ width: cellW }} />)}
         </colgroup>
         <thead>
-          <tr className="bg-gray-50 dark:bg-gray-700">
+          <tr className="bg-cream-100 dark:bg-gray-700">
             <th className="text-left px-4 py-2 text-[11px] font-medium text-gray-500 dark:text-gray-300 border-b border-r-2 border-gray-200 dark:border-gray-600 whitespace-nowrap">
               WORK ACTIVITY DETAILS
             </th>
@@ -98,7 +98,7 @@ function GanttChart({ tasks, dates, highlights, onToggleHighlight, onEditTask })
               </th>
             ))}
           </tr>
-          <tr className="bg-gray-50 dark:bg-gray-700">
+          <tr className="bg-cream-100 dark:bg-gray-700">
             <th className="text-left px-4 py-1 text-[10px] font-medium text-gray-400 dark:text-gray-400 border-b border-r-2 border-gray-200 dark:border-gray-600">
               SL&nbsp;&nbsp;Activity
             </th>
@@ -126,10 +126,10 @@ function GanttChart({ tasks, dates, highlights, onToggleHighlight, onEditTask })
         <tbody>
           {tasks.map((task, i) => (
             <Fragment key={task.id}>
-              <tr className={i % 2 === 0 ? 'bg-white dark:bg-gray-800' : 'bg-gray-50 dark:bg-gray-800/80'}>
+              <tr className={i % 2 === 0 ? 'bg-cream-50 dark:bg-gray-800' : 'bg-cream-100 dark:bg-gray-800/80'}>
                 <td
                   onClick={() => onEditTask?.(task)}
-                  className="px-4 h-11 border-b border-r-2 border-gray-200 dark:border-gray-600 text-xs font-semibold text-gray-900 dark:text-white overflow-hidden text-ellipsis whitespace-nowrap align-middle cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700"
+                  className="px-4 h-11 border-b border-r-2 border-gray-200 dark:border-gray-600 text-xs font-semibold text-gray-900 dark:text-white overflow-hidden text-ellipsis whitespace-nowrap align-middle cursor-pointer hover:bg-cream-200 dark:hover:bg-gray-700"
                 >
                   <span className="text-gray-400 dark:text-gray-500 font-normal mr-2">{task.sl}</span>
                   <span className="underline">{task.name}</span>
@@ -146,10 +146,10 @@ function GanttChart({ tasks, dates, highlights, onToggleHighlight, onEditTask })
                   )
                 })}
               </tr>
-              <tr className={i % 2 === 0 ? 'bg-white dark:bg-gray-800' : 'bg-gray-50 dark:bg-gray-800/80'}>
+              <tr className={i % 2 === 0 ? 'bg-cream-50 dark:bg-gray-800' : 'bg-cream-100 dark:bg-gray-800/80'}>
                 <td
                   onClick={() => onEditTask?.(task)}
-                  className="px-4 py-1 pb-2.5 border-b border-r-2 border-gray-200 dark:border-gray-600 text-[11px] text-gray-500 dark:text-gray-400 leading-snug align-top cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700"
+                  className="px-4 py-1 pb-2.5 border-b border-r-2 border-gray-200 dark:border-gray-600 text-[11px] text-gray-500 dark:text-gray-400 leading-snug align-top cursor-pointer hover:bg-cream-200 dark:hover:bg-gray-700"
                 >
                   {task.description || '\u00A0'}
                 </td>
@@ -443,11 +443,11 @@ function TaskModal({ task, isNew, onSave, onDelete, onClose }) {
     status:      task?.status      || 'not-started',
     progress:    task?.progress    ?? 0,
   })
-  const inp = 'w-full border border-gray-200 dark:border-gray-600 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 dark:text-white'
+  const inp = 'w-full border border-gray-200 dark:border-gray-600 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-cream-50 dark:bg-gray-700 dark:text-white'
 
   return (
     <div className="no-print fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-600 p-6 w-full max-w-sm max-h-[90vh] overflow-y-auto shadow-xl">
+      <div className="bg-cream-50 dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-600 p-6 w-full max-w-sm max-h-[90vh] overflow-y-auto shadow-xl">
         <div className="flex items-center justify-between mb-5">
           <h3 className="text-base font-semibold text-gray-900 dark:text-white">{isNew ? 'New Task' : 'Edit Task'}</h3>
           <button onClick={onClose} className="text-gray-300 hover:text-gray-500 dark:hover:text-gray-400 text-lg leading-none">✕</button>
@@ -485,7 +485,7 @@ function TaskModal({ task, isNew, onSave, onDelete, onClose }) {
           )}
           <div className="flex gap-2 ml-auto">
             <button onClick={onClose}
-              className="text-sm text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-gray-600 rounded-xl px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-700">
+              className="text-sm text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-gray-600 rounded-xl px-3 py-2 hover:bg-cream-100 dark:hover:bg-gray-700">
               Cancel
             </button>
             <button onClick={() => { onSave(f); onClose() }}
@@ -506,11 +506,11 @@ function ProjectModal({ project, onSave, onClose }) {
     start_date: project.start_date  || '',
     end_date:   project.end_date    || '',
   })
-  const inp = 'w-full border border-gray-200 dark:border-gray-600 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 dark:text-white'
+  const inp = 'w-full border border-gray-200 dark:border-gray-600 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-cream-50 dark:bg-gray-700 dark:text-white'
 
   return (
     <div className="no-print fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-600 p-6 w-full max-w-sm max-h-[90vh] overflow-y-auto shadow-xl">
+      <div className="bg-cream-50 dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-600 p-6 w-full max-w-sm max-h-[90vh] overflow-y-auto shadow-xl">
         <div className="flex items-center justify-between mb-5">
           <h3 className="text-base font-semibold text-gray-900 dark:text-white">Edit Project</h3>
           <button onClick={onClose} className="text-gray-300 hover:text-gray-500 dark:hover:text-gray-400 text-lg leading-none">✕</button>
@@ -539,7 +539,7 @@ function ProjectModal({ project, onSave, onClose }) {
 
         <div className="flex gap-2 justify-end mt-6">
           <button onClick={onClose}
-            className="text-sm text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-gray-600 rounded-xl px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-700">
+            className="text-sm text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-gray-600 rounded-xl px-3 py-2 hover:bg-cream-100 dark:hover:bg-gray-700">
             Cancel
           </button>
           <button onClick={() => { onSave(f); onClose() }}
@@ -677,12 +677,12 @@ function DownloadMenu({ project, tasks, dates, highlights, onClose }) {
   ]
 
   return (
-    <div ref={ref} className="absolute right-0 top-full mt-1 w-52 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl shadow-lg z-30 overflow-hidden">
+    <div ref={ref} className="absolute right-0 top-full mt-1 w-52 bg-cream-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl shadow-lg z-30 overflow-hidden">
       {items.map(item => (
         <button
           key={item.label}
           onClick={item.action}
-          className="w-full text-left px-4 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+          className="w-full text-left px-4 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-cream-100 dark:hover:bg-gray-700 transition-colors"
         >
           {item.label}
         </button>
@@ -781,13 +781,13 @@ export default function ProjectPage() {
   }
 
   if (loading) return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center text-sm text-gray-400">
+    <div className="min-h-screen bg-cream-100 dark:bg-gray-900 flex items-center justify-center text-sm text-gray-400">
       Loading project…
     </div>
   )
 
   if (!project) return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col items-center justify-center gap-4">
+    <div className="min-h-screen bg-cream-100 dark:bg-gray-900 flex flex-col items-center justify-center gap-4">
       <p className="text-sm text-gray-400">Project not found.</p>
       <button onClick={() => router.push('/')} className="text-sm text-blue-600 underline no-print">← Back</button>
     </div>
@@ -805,7 +805,7 @@ export default function ProjectPage() {
   ]
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-cream-100 dark:bg-gray-900">
       <ThemeToggle darkMode={darkMode} onToggle={() => setDarkMode(d => !d)} />
 
       <div className="max-w-screen-xl mx-auto px-4 sm:px-6 py-10 print:py-4 print:px-2">
@@ -823,7 +823,7 @@ export default function ProjectPage() {
               </span>
               <button
                 onClick={() => setEditProject(true)}
-                className="no-print w-8 h-8 rounded-lg border border-gray-200 dark:border-gray-600 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center justify-center transition-colors flex-shrink-0"
+                className="no-print w-8 h-8 rounded-lg border border-gray-200 dark:border-gray-600 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-cream-100 dark:hover:bg-gray-700 flex items-center justify-center transition-colors flex-shrink-0"
                 title="Edit project"
                 aria-label="Edit project"
               >
@@ -841,7 +841,7 @@ export default function ProjectPage() {
             <div className="relative">
               <button
                 onClick={() => setDownloadOpen(o => !o)}
-                className="text-sm px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 font-medium transition-colors"
+                className="text-sm px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-cream-100 dark:hover:bg-gray-700 font-medium transition-colors"
               >
                 Download ↓
               </button>
@@ -864,7 +864,7 @@ export default function ProjectPage() {
 
         <div className="no-print grid grid-cols-2 sm:grid-cols-4 gap-3 mb-10">
           {stats.map(s => (
-            <div key={s.label} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-2xl p-4">
+            <div key={s.label} className="bg-cream-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-2xl p-4">
               <p className="text-xs text-gray-400 mb-1">{s.label}</p>
               <p className={`text-3xl font-semibold leading-none ${s.cls}`}>{s.val}</p>
             </div>

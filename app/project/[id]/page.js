@@ -809,7 +809,7 @@ export default function ProjectPage() {
       <ThemeToggle darkMode={darkMode} onToggle={() => setDarkMode(d => !d)} />
 
       <div className="max-w-screen-xl mx-auto px-4 sm:px-6 py-10 print:py-4 print:px-2">
-        <button onClick={() => router.push('/')}
+        <button onClick={() => router.push(`/department/${project.department || 'corporate'}`)}
           className="no-print text-sm text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 mb-5 flex items-center gap-1 transition-colors">
           ← All Projects
         </button>

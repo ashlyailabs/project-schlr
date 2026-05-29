@@ -40,14 +40,24 @@ create table highlights (
   unique(project_id, task_id, date)
 );
 
--- ── Row Level Security (open access — no login required) ───────────────────
-alter table projects  enable row level security;
-alter table tasks     enable row level security;
-alter table highlights enable row level security;
+-- Departments
+create table departments (
+  id           uuid default gen_random_uuid() primary key,
+  name         text not null unique,
+  display_name text not null,
+  created_at   timestamp with time zone default now()
+);
 
-create policy "public_access" on projects   for all using (true) with check (true);
-create policy "public_access" on tasks      for all using (true) with check (true);
-create policy "public_access" on highlights for all using (true) with check (true);
+-- ── Row Level Security (open access — no login required) ───────────────────
+alter table projects   enable row level security;
+alter table tasks      enable row level security;
+alter table highlights enable row level security;
+alter table departments enable row level security;
+
+create policy "public_access" on projects    for all using (true) with check (true);
+create policy "public_access" on tasks       for all using (true) with check (true);
+create policy "public_access" on highlights  for all using (true) with check (true);
+create policy "public_access" on departments for all using (true) with check (true);
 
 -- ── Migration (run if upgrading from project-level highlights) ─────────────
 -- Drop old unique constraint and add task_id
@@ -65,4 +75,19 @@ alter table tasks alter column start_date drop not null;
 alter table tasks alter column end_date drop not null;
 
 -- ── Migration: project department ───────────────────────────────────────────
-alter table projects add column if not exists department text not null default 'corporate';
+alter table projects add column if not exists department text default 'corporate';
+
+-- ── Migration: departments table ────────────────────────────────────────────
+create table if not exists departments (
+  id           uuid default gen_random_uuid() primary key,
+  name         text not null unique,
+  display_name text not null,
+  created_at   timestamp with time zone default now()
+);
+alter table departments enable row level security;
+drop policy if exists "public_access" on departments;
+create policy "public_access" on departments for all using (true) with check (true);
+insert into departments (name, display_name) values
+  ('corporate', 'Corporate'),
+  ('government', 'Government')
+on conflict (name) do nothing;

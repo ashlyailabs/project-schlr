@@ -563,26 +563,6 @@ function DownloadMenu({ project, tasks, dates, highlights, onClose }) {
     return () => document.removeEventListener('mousedown', handleClick)
   }, [onClose])
 
-  function downloadCSV() {
-    const headers = ['SL', 'Activity Name', 'Description', 'Status', 'Progress', ...dates]
-    const rows = tasks.map(t => [
-      t.sl,
-      `"${(t.name || '').replace(/"/g, '""')}"`,
-      `"${(t.description || '').replace(/"/g, '""')}"`,
-      t.status,
-      t.progress,
-      ...dates.map(d => isHighlighted(highlights, t.id, d) ? '1' : '0'),
-    ])
-    const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n')
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `${project.name.replace(/[^a-z0-9]/gi, '_')}.csv`
-    a.click()
-    URL.revokeObjectURL(url)
-    onClose()
-  }
 
   async function downloadExcel() {
     const wb = new ExcelJS.Workbook()
@@ -672,8 +652,7 @@ function DownloadMenu({ project, tasks, dates, highlights, onClose }) {
 
   const items = [
     { label: 'Download as PDF', action: downloadPDF },
-    { label: 'Download as Excel (.xlsx)', action: downloadExcel },
-    { label: 'Download as CSV', action: downloadCSV },
+    { label: 'Download as Excel (.xlsx)', action: downloadExcel }
   ]
 
   return (

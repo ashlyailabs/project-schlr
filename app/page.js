@@ -103,7 +103,7 @@ export default function Home() {
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-10">
         <div className="mb-10 pb-6 border-b border-gray-200 dark:border-gray-600 mr-12">
           <h1 className="text-2xl font-semibold text-gray-900 dark:text-white tracking-tight">Project Scheduler</h1>
-          <p className="text-sm text-gray-400 mt-1">Construction & Furnishing · Corporate Department</p>
+          <p className="text-sm text-gray-400 mt-1">Ashly Group of Comapnies</p>
         </div>
 
         {loading ? (

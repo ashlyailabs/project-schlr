@@ -352,6 +352,8 @@ function DownloadMenu({ project, tasks, dates, highlights, onClose }) {
     const dateStartCol = 6
     const lastCol = Math.max(dateStartCol + dates.length - 1, 5)
 
+    ws.mergeCells('A1:B6')
+
     if (logoBase64) {
       const logoId = wb.addImage({ base64: logoBase64, extension: 'png' })
       ws.addImage(logoId, {

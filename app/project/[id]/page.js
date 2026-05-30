@@ -153,16 +153,12 @@ function GanttChart({ tasks, dates, highlights, onToggleHighlight, onEditTask })
                 >
                   {task.description || '\u00A0'}
                 </td>
-                {dates.map(ds => {
-                  const hl = isHighlighted(highlights, task.id, ds)
-                  return (
+                {dates.map(ds => (
                     <td
                       key={ds}
-                      onClick={() => onToggleHighlight(task.id, ds)}
-                      className={`h-6 border-b border-r border-gray-200 dark:border-gray-600 cursor-pointer p-0 ${cellBg(ds, i, hl)}`}
+                      className="h-6 border-b border-r border-gray-200 dark:border-gray-600 p-0 cursor-default"
                     />
-                  )
-                })}
+                  ))}
               </tr>
             </Fragment>
           ))}
@@ -503,7 +499,7 @@ function DownloadMenu({ project, tasks, dates, highlights, onClose }) {
       ws.getColumn(i).width = 4.5
     }
 
-    ws.views = [{ state: 'frozen', xSplit: 3, ySplit: 13 }]
+    ws.views = []
 
     const buffer = await wb.xlsx.writeBuffer()
     const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })

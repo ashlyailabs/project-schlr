@@ -320,15 +320,84 @@ function DownloadMenu({ project, tasks, dates, highlights, onClose }) {
 
 
   async function downloadExcel() {
+    let logoBase64 = null
+    try {
+      const logoResponse = await fetch('/ashly_logo.png')
+      if (logoResponse.ok) {
+        const logoBlob = await logoResponse.blob()
+        logoBase64 = await new Promise((resolve) => {
+          const reader = new FileReader()
+          reader.onloadend = () => {
+            const result = reader.result
+            resolve(typeof result === 'string' ? result.split(',')[1] : null)
+          }
+          reader.onerror = () => resolve(null)
+          reader.readAsDataURL(logoBlob)
+        })
+      }
+    } catch {
+      logoBase64 = null
+    }
+
+    const thinBorder = { style: 'thin', color: { argb: 'FFB0BEC5' } }
+    const allSidesThin = { top: thinBorder, left: thinBorder, bottom: thinBorder, right: thinBorder }
+    const whiteBorder = { style: 'thin', color: { argb: 'FFFFFFFF' } }
+    const allSidesWhite = { top: whiteBorder, left: whiteBorder, bottom: whiteBorder, right: whiteBorder }
+
     const wb = new ExcelJS.Workbook()
     const sheetName = project.name.slice(0, 31).replace(/[*?:/\\[\]]/g, '')
     const ws = wb.addWorksheet(sheetName || 'Project')
 
     const months = groupByMonth(dates)
     const dateStartCol = 6
+    const lastCol = Math.max(dateStartCol + dates.length - 1, 5)
 
-    // Row 1 — month groups across date columns
-    const monthRow = ws.getRow(1)
+    if (logoBase64) {
+      const logoId = wb.addImage({ base64: logoBase64, extension: 'png' })
+      ws.addImage(logoId, {
+        tl: { col: 0, row: 0 },
+        br: { col: 2, row: 6 },
+      })
+    }
+
+    for (let r = 1; r <= 6; r++) {
+      ws.getRow(r).height = 20
+    }
+
+    const companyRow = ws.getRow(7)
+    companyRow.height = 18
+    companyRow.getCell(1).value = 'ASHLY GROUP OF COMPANIES'
+    companyRow.getCell(1).font = { bold: true, size: 14, color: { argb: 'FF1F3864' } }
+    ws.mergeCells(7, 1, 7, 5)
+
+    const projectRow = ws.getRow(8)
+    projectRow.height = 18
+    projectRow.getCell(1).value = project.name
+    projectRow.getCell(1).font = { bold: true, size: 12, color: { argb: 'FF1F3864' } }
+    ws.mergeCells(8, 1, 8, 5)
+
+    const locationRow = ws.getRow(9)
+    locationRow.height = 18
+    locationRow.getCell(1).value = project.location || ''
+    locationRow.getCell(1).font = { size: 10, color: { argb: 'FF444444' } }
+    ws.mergeCells(9, 1, 9, 5)
+
+    const dateRangeStr = project.start_date && project.end_date
+      ? `${fmtFull(project.start_date)} – ${fmtFull(project.end_date)}`
+      : ''
+    const dateRangeRow = ws.getRow(10)
+    dateRangeRow.height = 18
+    dateRangeRow.getCell(1).value = dateRangeStr
+    dateRangeRow.getCell(1).font = { size: 10, color: { argb: 'FF444444' } }
+    ws.mergeCells(10, 1, 10, 5)
+
+    // Row 11 — empty separator
+
+    const monthRowNum = 12
+    const dayRowNum = 13
+    const monthRow = ws.getRow(monthRowNum)
+    monthRow.height = 20
+
     let col = dateStartCol
     months.forEach(mg => {
       const label = new Date(mg.dates[0] + 'T00:00:00')
@@ -338,56 +407,101 @@ function DownloadMenu({ project, tasks, dates, highlights, onClose }) {
       const endCol = col + mg.dates.length - 1
       monthRow.getCell(startCol).value = label
       if (mg.dates.length > 1) {
-        ws.mergeCells(1, startCol, 1, endCol)
+        ws.mergeCells(monthRowNum, startCol, monthRowNum, endCol)
       }
       const cell = monthRow.getCell(startCol)
-      cell.font = { bold: true }
+      cell.font = { bold: true, color: { argb: 'FFFFFFFF' }, size: 10 }
       cell.alignment = { horizontal: 'center', vertical: 'middle' }
-      cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE5E7EB' } }
+      cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1F3864' } }
+      cell.border = allSidesWhite
       col = endCol + 1
     })
 
-    // Row 2 — fixed columns + day numbers only
-    const dayRow = ws.getRow(2)
-    dayRow.getCell(1).value = 'SL No'
-    dayRow.getCell(2).value = 'Activity Name'
-    dayRow.getCell(3).value = 'Description'
-    dayRow.getCell(4).value = 'Status'
-    dayRow.getCell(5).value = 'Progress %'
+    const dayRow = ws.getRow(dayRowNum)
+    dayRow.height = 16
+
+    const fixedHeaders = ['SL No', 'Activity Name', 'Description', 'Status', 'Progress %']
+    fixedHeaders.forEach((label, i) => {
+      const cell = dayRow.getCell(i + 1)
+      cell.value = label
+      cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1F3864' } }
+      cell.font = { bold: true, color: { argb: 'FFFFFFFF' }, size: 10 }
+      cell.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true }
+      cell.border = allSidesThin
+    })
+
     dates.forEach((ds, i) => {
       const cell = dayRow.getCell(dateStartCol + i)
       cell.value = new Date(ds + 'T00:00:00').getDate()
       cell.numFmt = '0'
       cell.dataValidation = undefined
-    })
-    dayRow.font = { bold: true }
-    dayRow.eachCell(cell => {
-      cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE5E7EB' } }
-      cell.border = { bottom: { style: 'thin', color: { argb: 'FFD1D5DB' } } }
+      cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF2E5FA3' } }
+      cell.font = {
+        bold: true,
+        color: { argb: isWeekend(ds) ? 'FFFF6B6B' : 'FFFFFFFF' },
+        size: 9,
+      }
+      cell.alignment = { horizontal: 'center' }
+      cell.border = allSidesThin
     })
 
-    tasks.forEach((t) => {
-      const row = ws.addRow([
-        t.sl,
-        t.name,
-        t.description || '',
-        STATUS[t.status]?.label || t.status,
-        t.progress,
-        ...dates.map(d => isHighlighted(highlights, t.id, d) ? '●' : ''),
-      ])
+    tasks.forEach((t, taskIdx) => {
+      const rowNum = 14 + taskIdx
+      const row = ws.getRow(rowNum)
+      row.height = 32
+      const isEven = rowNum % 2 === 0
+      const rowFill = isEven
+        ? { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } }
+        : { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE8EDF5' } }
+
+      row.getCell(1).value = t.sl
+      row.getCell(2).value = t.name
+      row.getCell(3).value = t.description || ''
+      row.getCell(4).value = STATUS[t.status]?.label || t.status
+      row.getCell(5).value = t.progress
+
+      for (let c = 1; c <= 5; c++) {
+        const cell = row.getCell(c)
+        cell.fill = rowFill
+        cell.font = {
+          size: 9,
+          color: { argb: 'FF222222' },
+          bold: c === 2,
+        }
+        cell.border = allSidesThin
+        if (c === 3) cell.alignment = { wrapText: true, vertical: 'top' }
+      }
+
       dates.forEach((d, di) => {
+        const cell = row.getCell(dateStartCol + di)
+        cell.border = allSidesThin
         if (isHighlighted(highlights, t.id, d)) {
-          const cell = row.getCell(dateStartCol + di)
-          cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF3B82F6' } }
-          cell.font = { color: { argb: 'FFFFFFFF' } }
-          cell.alignment = { horizontal: 'center' }
+          cell.value = '●'
+          cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF2563EB' } }
+          cell.font = { color: { argb: 'FFFFFFFF' }, bold: true, size: 9 }
+          cell.alignment = { horizontal: 'center', vertical: 'middle' }
+        } else if (isWeekend(d)) {
+          cell.value = ''
+          cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFCE4E4' } }
+          cell.font = { size: 9, color: { argb: 'FF222222' } }
+        } else {
+          cell.value = ''
+          cell.fill = rowFill
+          cell.font = { size: 9, color: { argb: 'FF222222' } }
         }
       })
     })
 
-    ws.columns.forEach((col, i) => {
-      col.width = i < 5 ? (i === 2 ? 30 : i === 1 ? 24 : 14) : 5
-    })
+    ws.getColumn(1).width = 6
+    ws.getColumn(2).width = 22
+    ws.getColumn(3).width = 35
+    ws.getColumn(4).width = 14
+    ws.getColumn(5).width = 10
+    for (let i = dateStartCol; i <= lastCol; i++) {
+      ws.getColumn(i).width = 4.5
+    }
+
+    ws.views = [{ state: 'frozen', xSplit: 3, ySplit: 13 }]
 
     const buffer = await wb.xlsx.writeBuffer()
     const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
